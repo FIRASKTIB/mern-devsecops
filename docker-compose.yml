@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  # Base de données MongoDB
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - mern-network
+
+  # Backend Node.js
+  backend:
+    build: ./server
+    container_name: backend
+    ports:
+      - "5000:5000"
+    environment:
+      - ATLAS_URI=mongodb://mongodb:27017/mern
+    depends_on:
+      - mongodb
+    networks:
+      - mern-network
+
+  # Frontend React
+  frontend:
+    build: ./client
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - mern-network
+
+volumes:
+  mongo-data:
+
+networks:
+  mern-network:
+    driver: bridge
