@@ -1,0 +1,45 @@
+name: CI/CD Pipeline - MERN DevSecOps
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Étape 1 : Récupérer le code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Étape 2 : Installer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Étape 3 : Installer les dépendances frontend
+      - name: Install frontend dependencies
+        run: |
+          cd client
+          npm install
+
+      # Étape 4 : Builder le frontend
+      - name: Build frontend
+        run: |
+          cd client
+          npm run build
+
+      # Étape 5 : Installer les dépendances backend
+      - name: Install backend dependencies
+        run: |
+          cd server
+          npm install
+
+      # Étape 6 : Builder les images Docker
+      - name: Build Docker images
+        run: |
+          docker-compose build
