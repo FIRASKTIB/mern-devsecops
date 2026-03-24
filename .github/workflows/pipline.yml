@@ -42,4 +42,4 @@ jobs:
       # Étape 6 : Builder les images Docker
       - name: Build Docker images
         run: |
-          docker-compose build
+          docker compose build
