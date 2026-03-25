@@ -14,6 +14,8 @@ jobs:
       # Étape 1 : Récupérer le code
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # Étape 2 : Installer Node.js
       - name: Setup Node.js
@@ -39,7 +41,32 @@ jobs:
           cd server
           npm install
 
-      # Étape 6 : Builder les images Docker
+      # Étape 6 : SCA - npm audit frontend
+      - name: SCA - npm audit frontend
+        run: |
+          cd client
+          npm audit --audit-level=high || true
+
+      # Étape 7 : SCA - npm audit backend
+      - name: SCA - npm audit backend
+        run: |
+          cd server
+          npm audit --audit-level=high || true
+
+      # Étape 8 : SAST - SonarCloud
+      - name: SAST - SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=firasktib
+            -Dsonar.projectKey=FIRASKTIB_mern-devsecops
+            -Dsonar.sources=.
+            -Dsonar.host.url=https://sonarcloud.io
+
+      # Étape 9 : Builder les images Docker
       - name: Build Docker images
         run: |
           docker compose build
