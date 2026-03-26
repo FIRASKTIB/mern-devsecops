@@ -70,3 +70,21 @@ jobs:
       - name: Build Docker images
         run: |
           docker compose build
+      # Étape 10 : Démarrer l'application pour le DAST
+      - name: Start application for DAST
+        run: |
+          docker compose up -d
+          sleep 30
+
+      # Étape 11 : DAST - OWASP ZAP
+      - name: DAST - OWASP ZAP Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-I'
+
+      # Étape 12 : Arrêter l'application
+      - name: Stop application
+        run: |
+          docker compose down
