@@ -77,24 +77,27 @@ jobs:
       - name: Build Docker images
         run: |
           docker compose build
-
+          docker tag mern-frontend:latest mern-frontend:latest
+          docker tag mern-backend:latest mern-backend:latest
       # Étape 11 : Trivy - Scan image frontend
       - name: Trivy - Scan frontend image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'mern-frontend:latest'
-          format: 'table'
-          exit-code: '0'
-          severity: 'CRITICAL,HIGH'
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --severity CRITICAL,HIGH \
+            --exit-code 0 \
+            mern-frontend:latest
 
-      # Étape 12 : Trivy - Scan image backend
+      # Étape 12 : Trivy - Scan backend image
       - name: Trivy - Scan backend image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'mern-backend:latest'
-          format: 'table'
-          exit-code: '0'
-          severity: 'CRITICAL,HIGH'
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --severity CRITICAL,HIGH \
+            --exit-code 0 \
+            mern-backend:latest
 
       # Étape 13 : Démarrer l'application pour le DAST
       - name: Start application for DAST
