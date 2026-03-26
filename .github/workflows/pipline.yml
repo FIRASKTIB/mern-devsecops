@@ -53,7 +53,14 @@ jobs:
           cd server
           npm audit --audit-level=high || true
 
-      # Étape 8 : SAST - SonarCloud
+      # Étape 8 : Gitleaks - Détection de secrets
+      - name: Gitleaks - Secret Detection
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      # Étape 9 : SAST - SonarCloud
       - name: SAST - SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -66,17 +73,36 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.host.url=https://sonarcloud.io
 
-      # Étape 9 : Builder les images Docker
+      # Étape 10 : Builder les images Docker
       - name: Build Docker images
         run: |
           docker compose build
-      # Étape 10 : Démarrer l'application pour le DAST
+
+      # Étape 11 : Trivy - Scan image frontend
+      - name: Trivy - Scan frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'mern-frontend:latest'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+
+      # Étape 12 : Trivy - Scan image backend
+      - name: Trivy - Scan backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'mern-backend:latest'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+
+      # Étape 13 : Démarrer l'application pour le DAST
       - name: Start application for DAST
         run: |
           docker compose up -d
           sleep 30
 
-      # Étape 11 : DAST - OWASP ZAP
+      # Étape 14 : DAST - OWASP ZAP
       - name: DAST - OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
@@ -84,7 +110,7 @@ jobs:
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-I'
 
-      # Étape 12 : Arrêter l'application
+      # Étape 15 : Arrêter l'application
       - name: Stop application
         run: |
           docker compose down
