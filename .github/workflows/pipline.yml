@@ -77,12 +77,12 @@ jobs:
       - name: Build Docker images
         run: |
           docker compose build
-      # Étape 11 : Trivy - Scan image frontend
+    # Étape 11 : Trivy - Scan image frontend
       - name: Trivy - Scan frontend image
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image \
+            aquasec/trivy:0.69.0 image \
             --severity CRITICAL,HIGH \
             --exit-code 0 \
             mern-devsecops-frontend:latest
@@ -92,7 +92,7 @@ jobs:
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image \
+            aquasec/trivy:0.69.0 image \
             --severity CRITICAL,HIGH \
             --exit-code 0 \
             mern-devsecops-backend:latest
