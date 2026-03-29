@@ -77,8 +77,6 @@ jobs:
       - name: Build Docker images
         run: |
           docker compose build
-          docker tag mern-frontend:latest mern-frontend:latest
-          docker tag mern-backend:latest mern-backend:latest
       # Étape 11 : Trivy - Scan image frontend
       - name: Trivy - Scan frontend image
         run: |
