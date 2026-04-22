@@ -7,6 +7,7 @@ pipeline {
         DOCKER_IMAGE    = "firasktib/mern-devsecops"
         NETWORK         = "jenkins-devsecops_devops-network"
         SONAR_HOST      = "http://sonarqube:9000"
+        MERN_NETWORK    = "mern-devsecops-pipeline_mern-network"
     }
 
     stages {
@@ -159,7 +160,7 @@ pipeline {
             }
         }
 
-        // ✅ CORRIGÉ : --user root pour les permissions ZAP
+        // ✅ CORRIGÉ : réseau MERN pour que ZAP atteigne le conteneur frontend
         stage('DAST - OWASP ZAP') {
             steps {
                 sh '''
@@ -168,7 +169,7 @@ pipeline {
 
                     docker run --rm \
                         --user root \
-                        --network jenkins-devsecops_devops-network \
+                        --network mern-devsecops-pipeline_mern-network \
                         -v ${WORKSPACE}/.zap:/zap/wrk:rw \
                         ghcr.io/zaproxy/zaproxy:stable \
                         zap-baseline.py \
