@@ -80,18 +80,19 @@ pipeline {
         stage('SAST - SonarQube') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh """
+                    sh '''
                         docker run --rm \
-                            --network ${NETWORK} \
+                            --network jenkins-devsecops_devops-network \
                             -v ${WORKSPACE}:/usr/src \
                             -w /usr/src \
                             sonarsource/sonar-scanner-cli \
                             -Dsonar.projectKey=mern-devsecops \
-                            -Dsonar.sources=client/src,server \
-                            -Dsonar.host.url=${SONAR_HOST} \
-                            -Dsonar.token=${SONAR_TOKEN} \
+                            -Dsonar.sources=. \
+                            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/cypress/**,**/.git/** \
+                            -Dsonar.host.url=http://sonarqube:9000 \
+                            -Dsonar.token=$SONAR_TOKEN \
                             -Dsonar.scm.disabled=true
-                    """
+                    '''
                 }
             }
         }
@@ -142,8 +143,8 @@ pipeline {
         stage('Docker Push') {
             steps {
                 sh '''
-                    echo ${DOCKER_HUB_CRED_PSW} | \
-                        docker login -u ${DOCKER_HUB_CRED_USR} --password-stdin
+                    echo $DOCKER_HUB_CRED_PSW | \
+                        docker login -u $DOCKER_HUB_CRED_USR --password-stdin
                     docker push ${DOCKER_IMAGE}:client
                     docker push ${DOCKER_IMAGE}:server
                     docker logout
@@ -159,16 +160,16 @@ pipeline {
 
         stage('DAST - OWASP ZAP') {
             steps {
-                sh """
+                sh '''
                     docker run --rm \
-                        --network ${NETWORK} \
+                        --network jenkins-devsecops_devops-network \
                         -v ${WORKSPACE}/.zap:/zap/wrk:rw \
                         ghcr.io/zaproxy/zaproxy:stable \
                         zap-baseline.py \
                         -t http://client:3000 \
                         -r zap-report.html \
                         -I
-                """
+                '''
             }
             post {
                 always {
