@@ -159,7 +159,7 @@ pipeline {
             }
         }
 
-        // ✅ CORRIGÉ : permissions + target url
+        // ✅ CORRIGÉ : --user root pour les permissions ZAP
         stage('DAST - OWASP ZAP') {
             steps {
                 sh '''
@@ -167,6 +167,7 @@ pipeline {
                     chmod 777 ${WORKSPACE}/.zap
 
                     docker run --rm \
+                        --user root \
                         --network jenkins-devsecops_devops-network \
                         -v ${WORKSPACE}/.zap:/zap/wrk:rw \
                         ghcr.io/zaproxy/zaproxy:stable \
