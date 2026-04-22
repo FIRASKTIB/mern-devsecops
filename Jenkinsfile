@@ -97,7 +97,6 @@ pipeline {
             }
         }
 
-        // ✅ CORRIGÉ : Quality Gate sans waitForQualityGate
         stage('Quality Gate') {
             steps {
                 script {
@@ -116,13 +115,14 @@ pipeline {
             }
         }
 
+        // ✅ CORRIGÉ : volume trivy_cache nommé pour éviter no space left
         stage('Trivy - Image Scan') {
             steps {
                 sh '''
                     echo "=== Scan image client ==="
                     docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v /tmp/trivy-cache:/root/.cache/trivy \
+                        -v trivy_cache:/root/.cache/trivy \
                         aquasec/trivy:latest image \
                         --exit-code 0 \
                         --severity HIGH,CRITICAL \
@@ -132,7 +132,7 @@ pipeline {
                     echo "=== Scan image server ==="
                     docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v /tmp/trivy-cache:/root/.cache/trivy \
+                        -v trivy_cache:/root/.cache/trivy \
                         aquasec/trivy:latest image \
                         --exit-code 0 \
                         --severity HIGH,CRITICAL \
