@@ -115,7 +115,6 @@ pipeline {
             }
         }
 
-        // ✅ CORRIGÉ : volume trivy_cache nommé pour éviter no space left
         stage('Trivy - Image Scan') {
             steps {
                 sh '''
@@ -160,15 +159,19 @@ pipeline {
             }
         }
 
+        // ✅ CORRIGÉ : permissions + target url
         stage('DAST - OWASP ZAP') {
             steps {
                 sh '''
+                    mkdir -p ${WORKSPACE}/.zap
+                    chmod 777 ${WORKSPACE}/.zap
+
                     docker run --rm \
                         --network jenkins-devsecops_devops-network \
                         -v ${WORKSPACE}/.zap:/zap/wrk:rw \
                         ghcr.io/zaproxy/zaproxy:stable \
                         zap-baseline.py \
-                        -t http://client:3000 \
+                        -t http://frontend:80 \
                         -r zap-report.html \
                         -I
                 '''
